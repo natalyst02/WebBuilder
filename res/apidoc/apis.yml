@@ -1,0 +1,347 @@
+openapi: 3.0.2
+info:
+  title: Web Builder APIs
+  version: "1.0"
+servers:
+  - url: "http://127.0.0.1:9090"
+    description: Development server
+  - url: "http://builder.adsota.com"
+    description: Production server
+
+paths:
+  /api/v1/files:
+    get:
+      parameters:
+        - in: query
+          name: projectId
+          example: "c694fdcf-c3ce-496a-b498-13f7dd2facb0"
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: page
+          example: 1
+          required: true
+          schema:
+            type: number
+        - in: query
+          name: limit
+          example: 10
+          required: true
+          schema:
+            type: number
+        - in: query
+          name: sortField
+          example: "title"
+          description: "Require sortOrder query."
+          schema:
+            type: string
+        - in: query
+          name: sortOrder
+          example: 1
+          description: "Only allow `1` (for ascending) or `-1` (for descending)."
+          schema:
+            type: number
+
+      responses:
+        "200":
+          description: OK
+
+      tags:
+        - media
+
+    post:
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                title:
+                  type: string
+                  example: "My Title"
+                description:
+                  type: string
+                  example: "my description"
+                tags:
+                  type: string
+                  example: "test1;test2"
+                projectId:
+                  type: string
+                  format: uuid
+                  example: "c694fdcf-c3ce-496a-b498-13f7dd2facb0"
+
+      responses:
+        "200":
+          description: OK
+
+      tags:
+        - media
+
+  /api/v1/files/{id}:
+    put:
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  format: binary
+                filename:
+                  type: string
+                  format: binary
+                description:
+                  type: string
+                  format: binary
+                tags:
+                  type: string
+                  format: binary
+                  example: "test1;test2"
+                projectID:
+                  type: string
+                  format: uuid
+
+      responses:
+        "200":
+          description: OK
+
+      tags:
+        - media
+
+    delete:
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+
+      responses:
+        "200":
+          description: OK
+
+      tags:
+        - media
+
+  /files/{filename}:
+    get:
+      parameters:
+        - in: path
+          name: filename
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+
+      tags:
+        - media
+
+  /api/v1/contents/{projectId}:
+    get:
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          example: "c694fdcf-c3ce-496a-b498-13f7dd2facb0"
+          schema:
+            format: uuid
+            type: string
+      responses:
+        200:
+          description: ok
+      tags:
+        - "content"
+
+    post:
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          example: "c694fdcf-c3ce-496a-b498-13f7dd2facb0"
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example: "This JSON can contain any type of object(s)"
+            schema:
+              $ref: "#/components/schemas/AnyValue"
+      responses:
+        200:
+          description: ok
+      tags:
+        - "content"
+
+  /api/v1/templates/{id}:
+    get:
+      parameters:
+        - in: path
+          name: id
+          required: true
+          example: "63806f11ce1aa549438a2179"
+          schema:
+            type: string
+
+      responses:
+        200:
+          description: ok
+      tags:
+        - "template"
+
+    delete:
+      parameters:
+        - in: path
+          name: id
+          required: true
+          example: "63806f11ce1aa549438a2179"
+          schema:
+            type: string
+
+      responses:
+        200:
+          description: ok
+      tags:
+        - "template"
+
+    put:
+      parameters:
+        - in: path
+          name: id
+          required: true
+          example: "63806f11ce1aa549438a2179"
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Toolbar"
+                  format: binary
+                type:
+                  type: string
+                  example: "dashboard"
+                  format: binary
+                tags:
+                  type: string
+                  example: "utils"
+                  format: binary
+                projectId:
+                  type: string
+                  example: c694fdcf-c3ce-496a-b498-13f7dd2facb0
+                  format: binary
+                content:
+                  type: object
+                  description: put your object in here
+                  example: { "data": "example dashboard content" }
+                  properties:
+                    data:
+                      $ref: "#/components/schemas/AnyValue"
+
+      responses:
+        200:
+          description: ok
+      tags:
+        - "template"
+
+  /api/v1/templates:
+    get:
+      parameters:
+        - in: query
+          name: projectId
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: c694fdcf-c3ce-496a-b498-13f7dd2facb0
+        - in: query
+          name: page
+          example: 1
+          required: true
+          schema:
+            type: number
+        - in: query
+          name: limit
+          example: 10
+          required: true
+          schema:
+            type: number
+        - in: query
+          name: sortField
+          example: "title"
+          description: "Require sortOrder query."
+          schema:
+            type: string
+        - in: query
+          name: sortOrder
+          example: 1
+          description: "Only allow `1` (for ascending) or `-1` (for descending)."
+          schema:
+            type: number
+
+      responses:
+        "200":
+          description: ok
+      tags:
+        - "template"
+
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Navigation Bar"
+                  format: binary
+                type:
+                  type: string
+                  example: "landing-page"
+                  format: binary
+                tags:
+                  type: string
+                  example: "home;main"
+                  format: binary
+                projectId:
+                  type: string
+                  example: c694fdcf-c3ce-496a-b498-13f7dd2facb0
+                  format: binary
+                content:
+                  type: object
+                  description: put your object in here
+                  example: { "data": "example template content" }
+                  properties:
+                    data:
+                      $ref: "#/components/schemas/AnyValue"
+
+      responses:
+        200:
+          description: ok
+      tags:
+        - "template"
+
+components:
+  schemas:
+    AnyValue: {}

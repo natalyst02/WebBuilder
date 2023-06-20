@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: appota-tasks
+  name: web-builder-api
+spec:
+  replicas: 2
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: web-builder-api
+  template:
+    metadata:
+      labels:
+        app: web-builder-api
+    spec:
+      imagePullSecrets:
+        - name: deploy-token-thnt
+      volumes:
+        - name: configs
+          secret:
+            secretName: web-builder-api-configs
+        - name: data
+          persistentVolumeClaim:
+            claimName: pvc
+      containers:
+        - name: web-builder-api
+          image: docker.appota.com/thnt/web-builder-backend/api:<IMAGE_TAG>
+          ports:
+            - containerPort: 9090
+          env:
+            - name: CONFIG_FILE
+              value: /.env
+          volumeMounts:
+            - name: configs
+              mountPath: /app.env
+              subPath: .env.prod
+              readOnly: true
+            - name: data
+              mountPath: /data
+              subPath: web-builder-api
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1024M
+            requests:
+              cpu: 100m
+              memory: 128M
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: appota-tasks
+  name: web-builder-api
+spec:
+  ports:
+    - port: 9090
+  selector:
+    app: web-builder-api
+  type: NodePort
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  namespace: appota-tasks
+  name: web-builder
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-body-size: 20m
+spec:
+  rules:
+    - host: builder.adsota.com
+      http:
+        paths:
+          - path: /api/
+            backend:
+              serviceName: web-builder-api
+              servicePort: 9090
+          - path: /files/
+            backend:
+              serviceName: web-builder-api
+              servicePort: 9090
+          - path: /www/apidoc/
+            backend:
+              serviceName: web-builder-api
+              servicePort: 9090
